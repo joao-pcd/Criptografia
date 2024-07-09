@@ -1,8 +1,6 @@
 package com.joaopcd.criptografia.domain.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,4 +20,7 @@ public class Card {
 
     @Column(precision = 13, scale = 2)
     private BigDecimal value;
+
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 }
