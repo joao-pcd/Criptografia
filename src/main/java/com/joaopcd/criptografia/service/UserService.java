@@ -2,6 +2,7 @@ package com.joaopcd.criptografia.service;
 
 import com.joaopcd.criptografia.domain.model.User;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 public interface UserService {
@@ -10,9 +11,9 @@ public interface UserService {
 
     User findById(Long id);
 
-    void create(User user);
+    User create(User user) throws NoSuchAlgorithmException;
 
-    void update(Long id, User user);
+    User update(Long id, User user) throws NoSuchAlgorithmException;
 
     void delete(Long id);
 }
