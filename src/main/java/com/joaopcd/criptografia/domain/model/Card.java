@@ -21,6 +21,6 @@ public class Card {
     @Column(precision = 13, scale = 2)
     private BigDecimal value;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id")
     private Long userId;
 }

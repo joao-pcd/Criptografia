@@ -22,6 +22,17 @@ public class User {
 
     private String userDocument;
 
-    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private Set<Card> cards = new HashSet<>();
+
+    @PrePersist
+    @PreUpdate
+    private void prePersist() {
+        cards.forEach(card -> card.setUserId(this.id));
+    }
+
+    public void addCard(Card card){
+        card.setUserId(this.id);
+        this.cards.add(card);
+    }
 }
