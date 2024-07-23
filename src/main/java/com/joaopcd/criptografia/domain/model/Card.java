@@ -1,18 +1,17 @@
 package com.joaopcd.criptografia.domain.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
+@EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-@Entity(name = "tb_card")
+@Entity
+@Table(name = "tb_card")
 public class Card {
 
     @Id
