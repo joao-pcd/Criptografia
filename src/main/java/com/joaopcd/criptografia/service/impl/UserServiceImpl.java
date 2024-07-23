@@ -6,8 +6,6 @@ import com.joaopcd.criptografia.domain.repository.CardRepository;
 import com.joaopcd.criptografia.domain.repository.UserRepository;
 import com.joaopcd.criptografia.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,16 +13,13 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
     @Autowired
     private final UserRepository userRepository;
 
@@ -46,31 +41,13 @@ public class UserServiceImpl implements UserService {
         criptographyUserDoc(user);
         user.getCards().forEach(card -> {
             try {
-                card.setCreditCardToken(toHex(getSHA(card.getCreditCardToken())));;
+                criptographyCard(card);
             } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException(e);
             }
         });
         User savedUser = userRepository.save(user);
         user.getCards().forEach(card -> card.setUserId(savedUser.getId()));
-        System.out.println(savedUser.toString());
-
-//        if (user.getCards() != null){
-//            Set<Card> updatedCards = new HashSet<>();
-//            user.getCards().forEach(card -> {
-//                if (cardRepository.existsById(card.getCreditCardToken())) {
-//                    throw new IllegalArgumentException("Cartão com token " + card.getCreditCardToken() + " já existe.");
-//                }
-//                try {
-//                    card.setCreditCardToken(toHex(getSHA(card.getCreditCardToken())));
-//                } catch (NoSuchAlgorithmException e) {
-//                    throw new RuntimeException(e);
-//                }
-//                card.setUserId(savedUser.getId());
-//                updatedCards.add(card);
-//            });
-//            savedUser.setCards(updatedCards);
-//        }
         return userRepository.save(savedUser);
     }
 
@@ -79,9 +56,28 @@ public class UserServiceImpl implements UserService {
         User userToUpdate = this.findById(id);
 
         userToUpdate.setUserDocument(user.getUserDocument());
-        userToUpdate.setCards(user.getCards());
-
         criptographyUserDoc(userToUpdate);
+
+        if (!user.getCards().isEmpty()){
+            userToUpdate.getCards().clear();
+        }
+
+        user.getCards().forEach(card -> {
+            try {
+                criptographyCard(card);
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            }
+            Card existingCard = cardRepository.findById(card.getCreditCardToken()).orElse(null);
+            if (existingCard == null){
+                existingCard = new Card();
+                existingCard.setCreditCardToken(card.getCreditCardToken());
+            }
+            existingCard.setValue(card.getValue());
+            existingCard.setUserId(userToUpdate.getId());
+
+            userToUpdate.getCards().add(existingCard);
+        });
 
         return userRepository.save(userToUpdate);
     }
@@ -112,6 +108,11 @@ public class UserServiceImpl implements UserService {
     private static void criptographyUserDoc(User user) throws NoSuchAlgorithmException {
         String criptoDoc = toHex(getSHA(user.getUserDocument()));
         user.setUserDocument(criptoDoc);
+    }
+
+    private static void criptographyCard(Card card) throws NoSuchAlgorithmException {
+        String criptoCard = toHex(getSHA(card.getCreditCardToken()));
+        card.setCreditCardToken(criptoCard);
     }
 }
 
